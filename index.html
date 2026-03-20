@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<title>Grace Church</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500&family=Lora:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --sky:#2d5a65;--sky-l:#d4e8ec;--sky-m:#a8c5cc;--sky-d:#1a3a42;
+  --beige:#f3f0e8;--beige-m:#e8e2d5;--beige-d:#d4ccc0;
+  --cream:#faf8f4;--text:#1a2a2e;--muted:#5a7a82;--white:#fff;--border:#e0d8c8;
+}
+[data-dark]{
+  --sky:#7ec8d4;--sky-l:#1a3a40;--sky-m:#3a6a74;--sky-d:#9ed8e4;
+  --beige:#1a2228;--beige-m:#1e2830;--beige-d:#263036;
+  --cream:#111820;--text:#e0eaec;--muted:#6a9aa4;--white:#1a2a2e;--border:#263036;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:'DM Sans',sans-serif;background:var(--beige);color:var(--text);max-width:480px;margin:0 auto;min-height:100vh;transition:background .2s,color .2s}
+
+#loading{position:fixed;inset:0;background:var(--sky-d);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:999}
+#loading .spin{width:36px;height:36px;border:2.5px solid rgba(255,255,255,.2);border-top-color:#fff;border-radius:50%;animation:spin .8s linear infinite;margin-bottom:16px}
+#loading .lbl{font-family:'Lora',serif;font-size:18px;color:#fff;font-weight:600}
+#loading .sub{font-size:12px;color:var(--sky-m);margin-top:4px}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ACCUEIL */
+#screen-accueil{background:var(--sky-d);min-height:100vh;display:none;flex-direction:column}
+.acc-top{padding:56px 24px 32px;flex:1}
+.acc-church{font-family:'Lora',serif;font-size:28px;font-weight:600;color:#fff;margin-bottom:6px;line-height:1.2}
+.acc-tagline{font-size:13px;color:var(--sky-m);margin-bottom:40px}
+.acc-btns{display:flex;flex-direction:column;gap:10px}
+.acc-btn{background:rgba(255,255,255,.08);border:.5px solid rgba(255,255,255,.12);border-radius:14px;padding:16px 18px;display:flex;align-items:center;gap:14px;cursor:pointer;transition:background .15s}
+.acc-btn:active{background:rgba(255,255,255,.16)}
+.acc-btn-ico{width:42px;height:42px;border-radius:10px;background:rgba(255,255,255,.12);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.acc-btn-ico svg{width:20px;height:20px;stroke:#fff;fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+.acc-btn-title{font-size:15px;font-weight:500;color:#fff}
+.acc-btn-sub{font-size:11px;color:var(--sky-m);margin-top:2px}
+.acc-btn-arr{margin-left:auto;color:rgba(255,255,255,.4);font-size:20px}
+.acc-footer{padding:20px 24px;font-size:10px;color:rgba(255,255,255,.2);text-align:center}
+
+/* APP */
+#app{display:none}
+.hdr{background:var(--sky-l);padding:12px 14px 0;transition:background .2s}
+.hdr-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.hdr-title{font-family:'Lora',serif;font-size:16px;font-weight:600;color:var(--sky-d)}
+.dark-btn{width:28px;height:28px;border-radius:50%;border:.5px solid var(--border);background:var(--white);cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center}
+.nav{display:flex;overflow-x:auto;gap:3px;padding-bottom:11px;scrollbar-width:none}
+.nav::-webkit-scrollbar{display:none}
+.nb{flex-shrink:0;padding:6px 12px;border-radius:20px;border:none;font-size:12px;font-weight:500;background:rgba(255,255,255,.5);color:var(--muted);cursor:pointer;white-space:nowrap;transition:all .15s}
+.nb.on{background:var(--sky-d);color:#fff}
+.nb.home{background:var(--sky-d);color:#fff;opacity:.7}
+.nb.home:hover{opacity:1}
+.pnl{display:none;padding:14px 14px 56px}.pnl.on{display:block}
+
+/* TOGGLE */
+.toggle-row{display:flex;gap:0;background:var(--beige-d);border-radius:22px;padding:3px;margin-bottom:14px}
+.tgl{flex:1;padding:7px;border-radius:19px;font-size:12px;font-weight:500;text-align:center;color:var(--muted);cursor:pointer;transition:all .15s;border:none;background:transparent}
+.tgl.on{background:var(--white);color:var(--sky-d);font-weight:600;box-shadow:0 1px 4px rgba(0,0,0,.06)}
+
+/* HORAIRES */
+.horaires{background:var(--white);border-radius:12px;overflow:hidden;margin-bottom:12px;border:.5px solid var(--border)}
+.horaire-row{display:flex;align-items:center;border-bottom:.5px solid var(--beige-m)}
+.horaire-row:last-child{border:none}
+.horaire-time{background:var(--sky-l);padding:10px 12px;font-size:11px;font-weight:600;color:var(--sky-d);min-width:94px;text-align:center;flex-shrink:0}
+.horaire-label{padding:10px 14px;font-size:12px;color:var(--text);flex:1}
+
+/* THÈME */
+.theme-hero{background:var(--sky-d);border-radius:14px;padding:16px 18px;margin-bottom:10px}
+.th-titre{font-family:'Lora',serif;font-size:18px;font-weight:600;color:#fff;margin-bottom:3px;line-height:1.3}
+.th-ref{font-size:11px;color:var(--sky-m);letter-spacing:.04em;margin-bottom:10px}
+.th-sep{height:.5px;background:rgba(255,255,255,.15);margin-bottom:10px}
+.th-ora{font-size:12px;color:rgba(255,255,255,.75)}
+
+/* ÉQUIPE */
+.equipe{background:var(--white);border-radius:12px;overflow:hidden;margin-bottom:10px;border:.5px solid var(--border)}
+.eq-row{display:flex;align-items:baseline;padding:10px 14px;border-bottom:.5px solid var(--beige-m)}
+.eq-row:last-child{border:none}
+.eq-lbl{font-size:10px;color:var(--muted);width:74px;flex-shrink:0;letter-spacing:.04em;text-transform:uppercase;padding-top:2px}
+.eq-val{font-size:13px;color:var(--text);flex:1;line-height:1.5}
+.eq-val.big{font-size:17px;font-weight:600;color:var(--sky-d);line-height:1.2}
+.eq-sep{color:var(--sky-m);margin:0 5px;font-size:11px}
+
+/* CHANTS */
+.chants-card{background:var(--white);border-radius:12px;overflow:hidden;margin-bottom:10px;border:.5px solid var(--border)}
+.chants-hdr{background:var(--sky-l);padding:9px 14px;font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--sky-d)}
+.chant-row{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:.5px solid var(--beige-m)}
+.chant-row:last-child{border:none}
+.chant-num{width:22px;height:22px;border-radius:50%;background:var(--sky-l);font-size:10px;font-weight:600;color:var(--sky-d);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.chant-name{font-size:13px;color:var(--text);flex:1}
+.yt-btn{width:28px;height:28px;border-radius:50%;background:var(--sky-d);display:flex;align-items:center;justify-content:center;flex-shrink:0;cursor:pointer;text-decoration:none}
+.yt-btn svg{width:11px;height:11px;fill:white;margin-left:1px}
+
+/* PRÉPA */
+.prepa-bar{background:var(--sky-l);border-radius:10px;padding:10px 14px;display:flex;align-items:center;gap:10px}
+.prepa-lbl{font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--sky-d);flex-shrink:0}
+.prepa-val{font-size:12px;color:var(--sky-d);flex:1}
+
+/* GROUPES */
+.grp-tabs-row{display:flex;gap:0;background:var(--beige-d);border-radius:22px;padding:3px;margin-bottom:12px}
+.gtb{flex:1;padding:7px;border-radius:19px;font-size:12px;font-weight:500;text-align:center;color:var(--muted);cursor:pointer;transition:all .15s;border:none;background:transparent}
+.gtb.on{background:var(--white);color:var(--sky-d);font-weight:600;box-shadow:0 1px 4px rgba(0,0,0,.06)}
+.grp-card{background:var(--white);border-radius:14px;overflow:hidden;border:.5px solid var(--border)}
+.grp-hdr{background:var(--sky-d);padding:14px 16px}
+.grp-hdr-date{font-size:10px;color:var(--sky-m);margin-bottom:3px}
+.grp-hdr-theme{font-family:'Lora',serif;font-size:16px;color:#fff;font-weight:600;line-height:1.3}
+.grp-body-row{display:flex;align-items:baseline;padding:10px 14px;border-bottom:.5px solid var(--beige-m)}
+.grp-body-row:last-child{border:none}
+.grp-lbl{font-size:10px;color:var(--muted);width:74px;flex-shrink:0;text-transform:uppercase;letter-spacing:.04em}
+.grp-val{font-size:13px;color:var(--text);font-weight:500}
+
+/* ÉVÉNEMENTS */
+.evt-card{background:var(--white);border-radius:14px;overflow:hidden;margin-bottom:10px;border:.5px solid var(--border)}
+.evt-top{background:var(--sky-d);padding:14px 16px}
+.evt-titre{font-family:'Lora',serif;font-size:17px;font-weight:600;color:#fff;margin-bottom:3px}
+.evt-dates{font-size:11px;color:var(--sky-m)}
+.evt-body{padding:12px 14px}
+.evt-desc{font-size:12px;color:var(--muted);line-height:1.6;margin-bottom:10px}
+.evt-pdf{display:flex;align-items:center;gap:10px;background:var(--sky-l);border-radius:9px;padding:10px 12px;cursor:pointer;text-decoration:none}
+.evt-pdf-ico{width:32px;height:38px;background:var(--sky-d);border-radius:4px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.evt-pdf-ico svg{width:16px;height:16px;stroke:white;fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+.evt-pdf-txt{font-size:12px;font-weight:500;color:var(--sky-d)}
+.evt-pdf-sub{font-size:10px;color:var(--muted);margin-top:1px}
+
+/* INFOS */
+.infos-hero{background:var(--sky-d);border-radius:14px;padding:16px 18px;margin-bottom:12px;text-align:center}
+.infos-hero-title{font-family:'Lora',serif;font-size:18px;color:#fff;font-weight:600;margin-bottom:4px}
+.infos-hero-sub{font-size:12px;color:var(--sky-m)}
+.info-row{background:var(--white);border-radius:12px;padding:12px 14px;margin-bottom:7px;display:flex;align-items:flex-start;gap:12px;border:.5px solid var(--border)}
+.info-ico{width:36px;height:36px;border-radius:9px;background:var(--sky-l);display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.info-ico svg{width:17px;height:17px;stroke:var(--sky-d);fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+.info-lbl{font-size:10px;color:var(--muted);margin-bottom:2px;text-transform:uppercase;letter-spacing:.04em}
+.info-val{font-size:13px;font-weight:500;color:var(--text);line-height:1.4}
+.info-sub{font-size:11px;color:var(--muted);margin-top:2px}
+
+.empty{text-align:center;padding:32px;color:var(--muted);font-size:13px}
+</style>
+</head>
+<body>
+
+<div id="loading">
+  <div class="spin"></div>
+  <div class="lbl">Grace Church</div>
+  <div class="sub">Chargement...</div>
+</div>
+
+<div id="screen-accueil">
+  <div class="acc-top">
+    <div class="acc-church">Bienvenue à<br>Grace Church</div>
+    <div class="acc-tagline">Église Chrétienne Chinoise Protestante de Paris</div>
+    <div class="acc-btns">
+      <div class="acc-btn" onclick="goTo('culte')">
+        <div class="acc-btn-ico"><svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5M2 17l10 5 10-5M2 12l10 5 10-5"/></svg></div>
+        <div><div class="acc-btn-title">Culte Franco</div><div class="acc-btn-sub">Présidence · équipe · chants du dimanche</div></div>
+        <div class="acc-btn-arr">›</div>
+      </div>
+      <div class="acc-btn" onclick="goTo('groupes')">
+        <div class="acc-btn-ico"><svg viewBox="0 0 24 24"><circle cx="9" cy="7" r="4"/><path d="M3 21v-2a4 4 0 014-4h4a4 4 0 014 4v2"/><path d="M16 3.13a4 4 0 010 7.75M21 21v-2a4 4 0 00-3-3.87"/></svg></div>
+        <div><div class="acc-btn-title">Groupes</div><div class="acc-btn-sub">Paix · Fidélité · Bonté</div></div>
+        <div class="acc-btn-arr">›</div>
+      </div>
+      <div class="acc-btn" onclick="goTo('evenements')">
+        <div class="acc-btn-ico"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div>
+        <div><div class="acc-btn-title">Événements</div><div class="acc-btn-sub">Campus · Pâques · célébrations</div></div>
+        <div class="acc-btn-arr">›</div>
+      </div>
+    </div>
+  </div>
+  <div class="acc-footer">45 Rue Delizy · 93500 Pantin</div>
+</div>
+
+<div id="app">
+  <div class="hdr">
+    <div class="hdr-top">
+      <div class="hdr-title">Grace Church</div>
+      <button class="dark-btn" id="dark-btn" onclick="toggleDark()">☀</button>
+    </div>
+    <nav class="nav">
+      <button class="nb home" onclick="backHome()" title="Accueil">⌂</button>
+      <button class="nb" onclick="showTab('culte',this)">Culte Franco</button>
+      <button class="nb" onclick="showTab('groupes',this)">Groupes</button>
+      <button class="nb" onclick="showTab('evenements',this)">Événements</button>
+      <button class="nb" onclick="showTab('infos',this)">Infos</button>
+    </nav>
+  </div>
+  <div class="pnl" id="pnl-culte">
+    <div class="toggle-row">
+      <button class="tgl on" id="tgl-ce" onclick="setCulteView('ce')">Ce dimanche</button>
+      <button class="tgl" id="tgl-pr" onclick="setCulteView('prochain')">Dimanche prochain</button>
+    </div>
+    <div id="culte-content"></div>
+  </div>
+  <div class="pnl" id="pnl-groupes">
+    <div class="grp-tabs-row">
+      <button class="gtb on" onclick="showGrp('paix',this)">Paix</button>
+      <button class="gtb" onclick="showGrp('fidelite',this)">Fidélité</button>
+      <button class="gtb" onclick="showGrp('bonte',this)">Bonté</button>
+    </div>
+    <div id="grp-content"></div>
+  </div>
+  <div class="pnl" id="pnl-evenements"><div id="evt-content"></div></div>
+  <div class="pnl" id="pnl-infos"><div id="infos-content"></div></div>
+</div>
+
+<script>
+const SHEET_ID="1khxUvrKSnrqtkkdCsmXiCjW3TjWcSV38otYOGMO5klU";
+const BASE="https://docs.google.com/spreadsheets/d/"+SHEET_ID+"/gviz/tq?tqx=out:csv&sheet=";
+function csvUrl(sh){return BASE+encodeURIComponent(sh);}
+function parseCSV(txt){
+  var rows=[];
+  txt.split("\n").forEach(function(line){
+    if(!line.trim())return;
+    var row=[];var cur="";var inQ=false;
+    for(var i=0;i<line.length;i++){
+      var c=line[i];
+      if(c==='"'){if(inQ&&line[i+1]==='"'){cur+='"';i++;}else inQ=!inQ;}
+      else if(c===','&&!inQ){row.push(cur.trim());cur="";}
+      else cur+=c;
+    }
+    row.push(cur.trim());rows.push(row);
+  });
+  return rows;
+}
+function parseDate(s){
+  if(!s)return null;
+  s=s.replace(/"+/g,"").trim();
+  var m=s.match(/Date\((\d+),(\d+),(\d+)\)/);
+  if(m)return m[1]+"-"+String(+m[2]+1).padStart(2,"0")+"-"+String(+m[3]).padStart(2,"0");
+  if(/^\d{4}-\d{2}-\d{2}/.test(s))return s.slice(0,10);
+  var p=s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);if(p)return p[3]+"-"+p[2].padStart(2,"0")+"-"+p[1].padStart(2,"0");
+  var p2=s.match(/^(\d{1,2})\/(\d{1,2})$/);if(p2)return "2026-"+p2[2].padStart(2,"0")+"-"+p2[1].padStart(2,"0");
+  return null;
+}
+function fetchSheet(sh,cb){fetch(csvUrl(sh)).then(function(r){return r.text();}).then(function(t){cb(parseCSV(t));}).catch(function(){cb([]);});}
+
+var MOIS=["janvier","février","mars","avril","mai","juin","juillet","août","septembre","octobre","novembre","décembre"];
+var JOURF=["dimanche","lundi","mardi","mercredi","jeudi","vendredi","samedi"];
+
+function todayStr(){var d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");}
+function getSunday(offset){
+  // "Ce dimanche" = dimanche de la semaine ISO (lundi=début)
+  // Lundi 15 mars → dimanche 22 mars
+  // Lundi 23 mars → dimanche 29 mars
+  var d=new Date();
+  var day=d.getDay(); // 0=dim, 1=lun ... 6=sam
+  // Trouver le dimanche de la semaine en cours (semaine lundi-dimanche)
+  // Si aujourd'hui est dimanche (0) → c'est ce dimanche
+  // Sinon → aller au dimanche prochain dans la même semaine ISO
+  var daysToSunday=day===0?0:7-day;
+  d.setDate(d.getDate()+daysToSunday+(offset*7));
+  return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
+}
+function fmtLong(s){
+  if(!s)return"";
+  var p=s.split("-");
+  var d=new Date(+p[0],+p[1]-1,+p[2]);
+  return JOURF[d.getDay()]+" "+d.getDate()+" "+MOIS[d.getMonth()];
+}
+function findClosest(dates,target){
+  var future=dates.filter(function(d){return d>=target;});
+  if(future.length)return future[0];
+  var past=dates.filter(function(d){return d<target;});
+  return past.length?past[past.length-1]:null;
+}
+
+var DATA={culte:[],gcPublic:{ce:null,prochain:null},paix:[],fidelite:[],bonte:[],evenements:[],dejeuner:[]};
+var DONE=0;var TOTAL=7;
+function loaded(){if(++DONE>=TOTAL){document.getElementById("loading").style.display="none";document.getElementById("screen-accueil").style.display="flex";}}
+
+function loadMultiGroup(sheets,cb){
+  var all=[];var done=0;
+  sheets.forEach(function(sh){
+    fetchSheet(sh,function(rows){
+      rows.forEach(function(r){var d=parseDate(r[0]);if(d)all.push([d,r[1]||"",r[2]||"",r[3]||"",r[4]||""]);});
+      if(++done===sheets.length){all.sort(function(a,b){return a[0]<b[0]?-1:1;});cb(all);}
+    });
+  });
+}
+
+function loadAll(){
+  fetchSheet("Franco_Louange",function(rows){
+    rows.forEach(function(r){var d=parseDate(r[0]);if(!d)return;DATA.culte.push({date:d,pres:r[1]||"",ch1:r[2]||"",ch2:r[3]||"",piano:r[4]||"",guitare:r[5]||"",batterie:r[6]||"",sono:r[7]||"",ppt:r[8]||"",orateur:r[9]||"",trad:r[10]||""});});
+    loaded();
+  });
+  fetchSheet("GCC_Public",function(rows){
+    rows.forEach(function(r){
+      var k=(r[0]||"").trim().toUpperCase();
+      if(k==="CE_DIMANCHE")DATA.gcPublic.ce={theme:r[1]||"",ref:r[2]||"",ch1:r[3]||"",ch1yt:r[4]||"",ch2:r[5]||"",ch2yt:r[6]||"",ch3:r[7]||"",ch3yt:r[8]||"",ch4:r[9]||"",ch4yt:r[10]||""};
+      if(k==="PROCHAIN_DIMANCHE")DATA.gcPublic.prochain={theme:r[1]||"",ref:r[2]||"",ch1:r[3]||"",ch1yt:r[4]||"",ch2:r[5]||"",ch2yt:r[6]||"",ch3:r[7]||"",ch3yt:r[8]||"",ch4:r[9]||"",ch4yt:r[10]||""};
+    });
+    loaded();
+  });
+  loadMultiGroup(["Paix_T1","Paix _T2","Paix _T3","Paix_T4"],function(d){DATA.paix=d;loaded();});
+  loadMultiGroup(["Fidélité_T1","Fidélité_T2","Fidélité_T3","Fidélité_T4"],function(d){DATA.fidelite=d;loaded();});
+  loadMultiGroup(["Bonté_T1","Bonté _T2","Bonté _T3","Bonté_T4"],function(d){DATA.bonte=d;loaded();});
+  fetchSheet("Réunion",function(rows){
+    rows.forEach(function(r){
+      var d=parseDate(r[0]);if(!d)return;
+      var tp=(r[2]||"").trim();var aff=(r[9]||"").trim().toLowerCase();
+      if(tp==="Événement"&&(aff==="v"||aff==="✓"||aff==="1")){
+        var notes=r[8]||"";
+        DATA.evenements.push({date:d,titre:r[6]||"",lieu:r[5]||"",desc:notes.startsWith("https://")?"":(notes),pdf:notes.startsWith("https://")?notes:""});
+      }
+    });
+    loaded();
+  });
+  fetchSheet("Franco_Table_PtD",function(rows){
+    var seen={};
+    rows.forEach(function(r){
+      var dL=parseDate(r[1]);
+      if(dL&&!seen[dL]){var eq=[r[2],r[3],r[4],r[5]].filter(function(v){return v&&v!=="---"&&v.trim()!=="";});if(eq.length){DATA.dejeuner.push([dL,eq.join(",")]);seen[dL]=true;}}
+      var dR=parseDate(r[7]);
+      if(dR&&!seen[dR]){var eq=[r[8],r[9],r[10],r[11]].filter(function(v){return v&&v!=="---"&&v.trim()!=="";});if(eq.length){DATA.dejeuner.push([dR,eq.join(",")]);seen[dR]=true;}}
+    });
+    DATA.dejeuner.sort(function(a,b){return a[0]<b[0]?-1:1;});
+    loaded();
+  });
+}
+
+/* NAV */
+var culteView="ce";var grpCur="paix";
+
+function backHome(){
+  document.getElementById("app").style.display="none";
+  document.getElementById("screen-accueil").style.display="flex";
+}
+function goTo(tab){
+  document.getElementById("screen-accueil").style.display="none";
+  document.getElementById("app").style.display="block";
+  var idx={culte:1,groupes:2,evenements:3,infos:4};
+  var btns=document.querySelectorAll(".nb");
+  showTab(tab,btns[idx[tab]]);
+}
+function showTab(k,btn){
+  document.querySelectorAll(".pnl").forEach(function(p){p.classList.remove("on");});
+  document.querySelectorAll(".nb").forEach(function(b){if(!b.classList.contains("home"))b.classList.remove("on");});
+  document.getElementById("pnl-"+k).classList.add("on");
+  if(btn)btn.classList.add("on");
+  if(k==="culte")renderCulte();
+  if(k==="groupes")renderGrp();
+  if(k==="evenements")renderEvenements();
+  if(k==="infos")renderInfos();
+}
+function toggleDark(){
+  var b=document.body;
+  if(b.hasAttribute("data-dark")){b.removeAttribute("data-dark");document.getElementById("dark-btn").textContent="☀";}
+  else{b.setAttribute("data-dark","");document.getElementById("dark-btn").textContent="🌙";}
+}
+
+/* CULTE */
+function setCulteView(v){
+  culteView=v;
+  document.getElementById("tgl-ce").classList.toggle("on",v==="ce");
+  document.getElementById("tgl-pr").classList.toggle("on",v==="prochain");
+  renderCulte();
+}
+
+function renderCulte(){
+  var targetDate=getSunday(culteView==="ce"?0:1);
+  var dates=DATA.culte.map(function(r){return r.date;});
+  var dateKey=findClosest(dates,targetDate);
+  var culteRow=DATA.culte.find(function(r){return r.date===dateKey;});
+  var pubRow=culteView==="ce"?DATA.gcPublic.ce:DATA.gcPublic.prochain;
+  var h="";
+
+  h+='<div class="horaires">';
+  h+='<div class="horaire-row"><div class="horaire-time">10h00–10h25</div><div class="horaire-label">Petit déjeuner — venez nombreux 😇</div></div>';
+  h+='<div class="horaire-row"><div class="horaire-time">10h30–12h00</div><div class="horaire-label">Culte francophone</div></div>';
+  h+='<div class="horaire-row"><div class="horaire-time">13h00–14h30</div><div class="horaire-label">Groupes Paix · Fidélité · Bonté</div></div>';
+  h+='</div>';
+
+  if(dateKey){
+    h+='<div style="font-size:11px;color:var(--muted);text-align:center;margin-bottom:12px;text-transform:capitalize">'+fmtLong(dateKey)+'</div>';
+  }
+
+  if(pubRow&&(pubRow.theme||pubRow.ref)){
+    h+='<div class="theme-hero">';
+    if(pubRow.theme)h+='<div class="th-titre">'+pubRow.theme+'</div>';
+    if(pubRow.ref)h+='<div class="th-ref">'+pubRow.ref+'</div>';
+    if(culteRow&&(culteRow.orateur||culteRow.trad)){
+      h+='<div class="th-sep"></div><div class="th-ora">';
+      if(culteRow.orateur)h+='Orateur : '+culteRow.orateur;
+      if(culteRow.orateur&&culteRow.trad)h+=' · ';
+      if(culteRow.trad)h+='Trad. : '+culteRow.trad;
+      h+='</div>';
+    }
+    h+='</div>';
+  }
+
+  if(culteRow){
+    h+='<div class="equipe">';
+    if(culteRow.pres)h+='<div class="eq-row"><div class="eq-lbl">Présidence</div><div class="eq-val big">'+culteRow.pres+'</div></div>';
+    var ch=[culteRow.ch1,culteRow.ch2].filter(Boolean);
+    if(ch.length)h+='<div class="eq-row"><div class="eq-lbl">Choristes</div><div class="eq-val">'+ch.join('<span class="eq-sep">·</span>')+'</div></div>';
+    var mu=[culteRow.piano?"Piano: "+culteRow.piano:"",culteRow.guitare?"Guitare: "+culteRow.guitare:"",culteRow.batterie?"Batterie: "+culteRow.batterie:""].filter(Boolean);
+    if(mu.length)h+='<div class="eq-row"><div class="eq-lbl">Musiciens</div><div class="eq-val">'+mu.join('<span class="eq-sep">·</span>')+'</div></div>';
+    var rg=[culteRow.sono?"Sono: "+culteRow.sono:"",culteRow.ppt?"PPT: "+culteRow.ppt:""].filter(Boolean);
+    if(rg.length)h+='<div class="eq-row"><div class="eq-lbl">Régie</div><div class="eq-val">'+rg.join('<span class="eq-sep">·</span>')+'</div></div>';
+    h+='</div>';
+  }
+
+  if(pubRow){
+    var chants=[[pubRow.ch1,pubRow.ch1yt],[pubRow.ch2,pubRow.ch2yt],[pubRow.ch3,pubRow.ch3yt],[pubRow.ch4,pubRow.ch4yt]].filter(function(c){return c[0]&&c[0].trim();});
+    if(chants.length){
+      h+='<div class="chants-card"><div class="chants-hdr">Chants</div>';
+      chants.forEach(function(c,i){
+        h+='<div class="chant-row"><div class="chant-num">'+(i+1)+'</div><div class="chant-name">'+c[0]+'</div>';
+        if(c[1]&&c[1].startsWith("https://"))h+='<a class="yt-btn" href="'+c[1]+'" target="_blank"><svg viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg></a>';
+        h+='</div>';
+      });
+      h+='</div>';
+    }
+  }
+
+  if(dateKey){
+    var dej=DATA.dejeuner.find(function(r){return r[0]===dateKey;});
+    if(dej&&dej[1])h+='<div class="prepa-bar"><div class="prepa-lbl">Table</div><div class="prepa-val">'+dej[1].split(",").join(" · ")+'</div></div>';
+  }
+
+  if(!culteRow&&!pubRow)h+='<div class="empty">Données à venir pour ce dimanche</div>';
+  document.getElementById("culte-content").innerHTML=h;
+}
+
+/* GROUPES */
+function showGrp(g,btn){
+  grpCur=g;
+  document.querySelectorAll(".gtb").forEach(function(b){b.classList.remove("on");});
+  if(btn)btn.classList.add("on");
+  renderGrp();
+}
+function renderGrp(){
+  var targetDate=getSunday(culteView==="ce"?0:1);
+  var data=grpCur==="paix"?DATA.paix:grpCur==="fidelite"?DATA.fidelite:DATA.bonte;
+  var dates=data.map(function(r){return r[0];});
+  var dateKey=findClosest(dates,targetDate);
+  var row=data.find(function(r){return r[0]===dateKey;});
+  var h="";
+  if(!row){h='<div class="empty">Données à venir</div>';document.getElementById("grp-content").innerHTML=h;return;}
+  h+='<div class="grp-card"><div class="grp-hdr">';
+  h+='<div class="grp-hdr-date" style="text-transform:capitalize">'+fmtLong(row[0])+' · 13h00–14h30</div>';
+  h+='<div class="grp-hdr-theme">'+(row[3]||row[2]||"Données à venir")+'</div>';
+  h+='</div>';
+  if(row[1])h+='<div class="grp-body-row"><div class="grp-lbl">Présidence</div><div class="grp-val">'+row[1]+'</div></div>';
+  if(row[2])h+='<div class="grp-body-row"><div class="grp-lbl">Orateur</div><div class="grp-val">'+row[2]+'</div></div>';
+  h+='</div>';
+  document.getElementById("grp-content").innerHTML=h;
+}
+
+/* ÉVÉNEMENTS */
+function renderEvenements(){
+  var today=todayStr();
+  var evts=DATA.evenements.filter(function(e){return e.date>=today;});
+  evts.sort(function(a,b){return a.date<b.date?-1:1;});
+  var h="";
+  if(!evts.length){h='<div class="empty">Aucun événement à venir</div>';document.getElementById("evt-content").innerHTML=h;return;}
+  evts.forEach(function(e){
+    h+='<div class="evt-card"><div class="evt-top"><div class="evt-titre">'+e.titre+'</div>';
+    h+='<div class="evt-dates" style="text-transform:capitalize">'+fmtLong(e.date)+(e.lieu?" · "+e.lieu:"")+'</div></div>';
+    h+='<div class="evt-body">';
+    if(e.desc)h+='<div class="evt-desc">'+e.desc+'</div>';
+    if(e.pdf)h+='<a class="evt-pdf" href="'+e.pdf+'" target="_blank"><div class="evt-pdf-ico"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div><div><div class="evt-pdf-txt">Voir l\'affiche</div><div class="evt-pdf-sub">Ouvrir le PDF</div></div></a>';
+    h+='</div></div>';
+  });
+  document.getElementById("evt-content").innerHTML=h;
+}
+
+/* INFOS */
+function renderInfos(){
+  var h='<div class="infos-hero"><div class="infos-hero-title">Grace Church</div><div class="infos-hero-sub">Église Chrétienne Chinoise Protestante de Paris</div></div>';
+  var infos=[
+    {ico:'<path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/>',lbl:"Adresse",val:"45 Rue Delizy",sub:"93500 Pantin"},
+    {ico:'<rect x="5" y="2" width="14" height="20" rx="2"/><circle cx="12" cy="17" r="1"/>',lbl:"Métro",val:"Ligne 5",sub:"Église de Pantin ou Hoche"},
+    {ico:'<path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>',lbl:"RER",val:"RER E",sub:"Station Pantin"}
+  ];
+  infos.forEach(function(i){
+    h+='<div class="info-row"><div class="info-ico"><svg viewBox="0 0 24 24">'+i.ico+'</svg></div>';
+    h+='<div><div class="info-lbl">'+i.lbl+'</div><div class="info-val">'+i.val+'</div>';
+    if(i.sub)h+='<div class="info-sub">'+i.sub+'</div>';
+    h+='</div></div>';
+  });
+  document.getElementById("infos-content").innerHTML=h;
+}
+
+loadAll();
+</script>
+</body>
+</html>
